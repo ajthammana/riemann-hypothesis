@@ -462,16 +462,46 @@ lemma degree_rowExpansion_mem_interlacing (hf : f ∈ nabla R c l) :
   have h_factor : aeval (borelMul c b (Ψ ∘ X)) = (mapAlgHom scale).comp
       (aeval (mapAlgHom (Polynomial.aeval 0) ∘ (borelMul c b (Ψ ∘ X) - Ψ ∘ X) + Ψ ∘ X)) := by
     refine algHom_ext fun ⟨y, j⟩ ↦ ?_
-    -- Casework on the row `y` and on the column `j` against `i` and `i + 1`; each case is a ring
-    -- identity.
+    -- Casework on the row `y`, on the column `j` against `i` and `i + 1`, and off the row `x` on
+    -- whether `y` has the colour of `x`; each case is a ring identity. Splitting on `j` directly
+    -- (rather than with `split_ifs`) avoids the impossible combinations of the conditions.
     by_cases hy : y = x
-    · simp +zetaDelta [rowExpansion, ite_and, mul_sub, hy, single_apply, algHom, mul_assoc,
-        borelMul]
-      split_ifs <;> subst_vars <;> simp_all [sub_eq_zero, mul_assoc] <;> ring
-    · simp +zetaDelta [rowExpansion, ite_and, mul_sub, hy, single_apply, algHom, mul_assoc,
-        borelMul]
-      split_ifs <;> subst_vars <;> simp_all
-      ring
+    · simp +zetaDelta only [ne_eq, single_apply, Prod.mk.injEq, ite_and, pow_ite, pow_one, pow_zero,
+        mul_ite, ite_mul, one_mul, mul_one, Polynomial.X_mul_C, algHom, mul_assoc, rowExpansion,
+        AlgHom.coe_comp, AlgEquiv.coe_toAlgHom, AlgEquiv.coe_trans, hy, aeval_X, borelMul,
+        Function.comp_apply, renameEquiv_apply, Equiv.coe_trans, Equiv.prodCongr_apply,
+        Equiv.Perm.coe_one, rename_X, Prod.map_apply, Equiv.optionSubtypeNe_symm_apply, ↓reduceDIte,
+        id_eq, optionProdEquiv_mk_none, sumAlgEquiv_X_inl, aevalTower_X, ↓reduceIte, mul_sub, mul_zero,
+        sum_sub_distrib, Finset.sum_ite_eq', mem_range, lt_add_iff_pos_right, Order.lt_one_iff,
+        Finset.sum_ite_eq, Order.lt_add_one_iff, Nat.add_eq_left, one_ne_zero, map_comp_sub,
+        Pi.add_apply, Pi.sub_apply, mapAlgHom_apply, map_sub, AlgHom.coe_restrictScalars, map_add]
+      obtain rfl | hj := eq_or_ne j i
+      · simp [mul_assoc]
+        ring
+      obtain rfl | hj' := eq_or_ne j (i + 1)
+      · simp
+        ring
+      · simp [Ne.symm hj, Ne.symm hj']
+    · simp +zetaDelta only [ne_eq, single_apply, Prod.mk.injEq, ite_and, pow_ite, pow_one, pow_zero,
+        mul_ite, ite_mul, one_mul, mul_one, Polynomial.X_mul_C, algHom, mul_assoc, rowExpansion,
+        AlgHom.coe_comp, AlgEquiv.coe_toAlgHom, AlgEquiv.coe_trans, aeval_X, borelMul,
+        Function.comp_apply, renameEquiv_apply, Equiv.coe_trans, Equiv.prodCongr_apply,
+        Equiv.Perm.coe_one, rename_X, Prod.map_apply, Equiv.optionSubtypeNe_symm_apply, hy,
+        ↓reduceDIte, id_eq, optionProdEquiv_mk_some, sumAlgEquiv_X_inr, aevalTower_C,
+        IsScalarTower.coe_toAlgHom', algebraMap_eq, mapAlgHom_apply, map_C, RingHom.coe_coe,
+        mul_sub, mul_zero, sum_sub_distrib, Finset.sum_ite_eq', mem_range, lt_add_iff_pos_right,
+        Order.lt_one_iff, ↓reduceIte, sum_ite_irrel, Finset.sum_ite_eq, Order.lt_add_one_iff,
+        sum_const_zero, map_comp_sub, Pi.add_apply, Pi.sub_apply, map_sub, map_mul, map_add,
+        Polynomial.aeval_C, Polynomial.algebraMap_eq, Polynomial.aeval_X, C_0, add_zero,
+        AlgHom.coe_restrictScalars]
+      obtain rfl | hj := eq_or_ne j i
+      · by_cases hc : c x = c y
+        · simp [hc]
+          ring
+        · simp [hc]
+      obtain rfl | hj' := eq_or_ne j (i + 1)
+      · by_cases hc : c x = c y <;> simp [hc]
+      · simp [Ne.symm hj, Ne.symm hj']
   -- After `T ↦ s T` the coefficient of `T ^ a` is divisible by `s ^ a`.
   have h_scale (p : P) {a k : ℕ} (hk : k < a) : ((scale p).coeff a).coeff k = 0 := by
     simp [P, scale, ← Polynomial.comp_eq_aeval, Polynomial.coeff_mul_X_pow', hk.not_ge]
